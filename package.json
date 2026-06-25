@@ -44,7 +44,16 @@
       "js",
       "json"
     ],
-    "clearMocks": true
+    "clearMocks": true,
+    "collectCoverage": true,
+    "coverageThreshold": {
+      "global": {
+        "lines": 75,
+        "functions": 75,
+        "branches": 75,
+        "statements": 75
+      }
+    }
   },
   "dependencies": {
     "@apollo/server": "^5.5.1",
