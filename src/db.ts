@@ -4,7 +4,7 @@ import { decodeCursor, encodeCursor, parseODataFilter, parseODataSelect, project
 
 const STROOPS = 10_000_000n;
 
-function toDisplayAmount(amount: string): string {
+export function toDisplayAmount(amount: string): string {
   const raw = BigInt(amount);
   const abs = raw < 0n ? -raw : raw;
   const integer = abs / STROOPS;
@@ -790,4 +790,49 @@ export async function queryAllTransfers(params: AllTransfersQueryParams) {
   });
 
   return { total, transfers, nextCursor: page.nextCursor };
+}
+
+// ─── Popular assets query ───────────────────────────────────────────────────
+export type PopularAssetsQueryParams = {
+  fromDate: Date;
+  by: string;
+  limit: number;
+  offset: number;
+};
+
+type PopularAssetRow = {
+  contractId: string;
+  transferCount: bigint;
+  volume: string;
+};
+
+export async function queryPopularAssets(params: PopularAssetsQueryParams) {
+  const { fromDate, by, limit, offset } = params;
+  const cap = Math.min(limit, 100);
+
+  const orderClause = by === "volume"
+    ? Prisma.sql`SUM(CAST("amount" AS NUMERIC)) DESC`
+    : Prisma.sql`COUNT(*) DESC`;
+
+  const countResult = await prisma.$queryRaw<Array<{ total: bigint }>>`
+    SELECT COUNT(DISTINCT "contractId")::INT8 AS "total"
+    FROM "wraith"."TokenTransfer"
+    WHERE "ledgerClosedAt" >= ${fromDate}
+  `;
+  const total = Number(countResult[0]?.total ?? 0);
+
+  const assets = await prisma.$queryRaw<PopularAssetRow[]>`
+    SELECT
+      "contractId",
+      COUNT(*)::INT8 AS "transferCount",
+      COALESCE(SUM(CAST("amount" AS NUMERIC)), 0)::TEXT AS "volume"
+    FROM "wraith"."TokenTransfer"
+    WHERE "ledgerClosedAt" >= ${fromDate}
+    GROUP BY "contractId"
+    ORDER BY ${orderClause}
+    LIMIT ${cap}
+    OFFSET ${offset}
+  `;
+
+  return { total, assets };
 }
