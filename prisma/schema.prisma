@@ -195,3 +195,16 @@ model RetentionJobRun {
 
   @@schema("wraith")
 }
+
+// ─── Backfill Cursor ───────────────────────────────────────────────────────────
+// Durable cursor so the backfill job can resume mid-range after a crash.
+// Always row ID 1 — singleton, one backfill at a time.
+model BackfillCursor {
+  id             Int      @id @default(1)
+  startLedger    Int
+  endLedger      Int
+  nextLedger     Int
+  updatedAt      DateTime @updatedAt
+
+  @@schema("wraith")
+}

@@ -197,6 +197,32 @@ export async function setLastIndexedLedger(ledger: number): Promise<void> {
   });
 }
 
+// ─── Backfill cursor helpers ──────────────────────────────────────────────────
+export interface BackfillCursorState {
+  startLedger: number;
+  endLedger: number;
+  nextLedger: number;
+}
+
+export async function getBackfillCursor(): Promise<BackfillCursorState | null> {
+  const state = await prisma.backfillCursor.findUnique({ where: { id: 1 } });
+  return state
+    ? { startLedger: state.startLedger, endLedger: state.endLedger, nextLedger: state.nextLedger }
+    : null;
+}
+
+export async function setBackfillCursor(cursor: BackfillCursorState): Promise<void> {
+  await prisma.backfillCursor.upsert({
+    where: { id: 1 },
+    create: { id: 1, ...cursor },
+    update: cursor,
+  });
+}
+
+export async function clearBackfillCursor(): Promise<void> {
+  await prisma.backfillCursor.deleteMany({ where: { id: 1 } });
+}
+
 // ─── Data retention ──────────────────────────────────────────────────────────
 const RETENTION_DAYS = parseInt(process.env.RETENTION_DAYS ?? "30", 10);
 
