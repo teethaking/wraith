@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import { jsonApiMiddleware } from "./middleware/jsonapi";
 import { queryHostFnLogs } from "./indexer/host-fn-log";
 import { queryTransfers, queryAllTransfers, queryByTxHash, querySummary, queryNftTransfers, getNftOwner, getNftMetadata, getLastIndexedLedger, prisma } from "./db";
 import { getLatestLedger } from "./rpc";
@@ -84,6 +85,7 @@ export function createApp(): express.Application {
 
   app.use(cors());
   app.use(express.json());
+  app.use(jsonApiMiddleware);
   app.use(limiter);
 
   // ── Accounts routes ───────────────────────────────────────────────────────────
