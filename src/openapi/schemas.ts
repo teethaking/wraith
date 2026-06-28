@@ -350,6 +350,27 @@ export const popularAssetsResponseSchema = z.object({
   assets: z.array(popularAssetSchema),
 });
 
+export const searchQuerySchema = z.object({
+  q: z
+    .string()
+    .trim()
+    .min(1, "Query parameter 'q' is required")
+    .max(80, "Query is too long"),
+}).passthrough();
+
+export const searchHitSchema = z.object({
+  type: z.enum(["account", "asset", "contract"]),
+  value: z.string(),
+  isSac: z.boolean().optional(),
+  lastActivityAt: z.string().optional(),
+});
+
+export const searchResponseSchema = z.object({
+  query: z.string(),
+  count: z.number().int(),
+  results: z.array(searchHitSchema),
+});
+
 export const candlesResponseSchema = z.object({
   bucket: z.enum(["1m", "1h", "1d"]),
   contractId: contractAddressSchema,
