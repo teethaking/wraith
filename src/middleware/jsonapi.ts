@@ -24,7 +24,7 @@ type JsonApiResourceIdentifier = {
 };
 
 type JsonApiResponse = {
-  data: JsonApiResource | JsonApiResource[] | null;
+  data?: JsonApiResource | JsonApiResource[] | null;
   meta?: Record<string, unknown>;
   links?: Record<string, string>;
   errors?: JsonApiError[];
