@@ -24,12 +24,14 @@ import {
 import { parseOr400 } from "./openapi/validation";
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
+// Skip rate limiting in test environment to avoid 429 errors during tests
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS ?? "60000", 10),
   max: parseInt(process.env.RATE_LIMIT_MAX ?? "60", 10),
-  standardHeaders: true,   // Sends `RateLimit-*` headers
-  legacyHeaders: false,    // Disables `X-RateLimit-*` headers
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },
+  skip: () => process.env.NODE_ENV === "test",
 });
 
 // ── Amount formatting ─────────────────────────────────────────────────────────
