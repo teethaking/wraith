@@ -10,6 +10,8 @@ import { createAccountsRouter } from "./api/accounts";
 import { createWebhooksRouter } from "./api/webhooks";
 import { createGraphQLMiddleware } from "./graphql/server";
 import { createPopularAssetsRouter } from "./routes/assets/popular";
+import { createExportsRouter } from "./routes/exports";
+import { createSearchRouter } from "./routes/search";
 import {
   hostFnQuerySchema,
   nftOwnerParamsSchema,
@@ -97,6 +99,12 @@ export function createApp(): express.Application {
 
   // ── Assets routes ───────────────────────────────────────────────────────────
   app.use("/assets", createPopularAssetsRouter());
+
+  // ── Export routes ─────────────────────────────────────────────────────────────
+  app.use("/", createExportsRouter());
+
+  // ── Fuzzy search across accounts, assets, and contracts ──────────────────────
+  app.use("/search", createSearchRouter());
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
   const parseIntParam = (val: unknown, fallback: number): number => {
